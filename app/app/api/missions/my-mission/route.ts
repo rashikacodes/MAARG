@@ -3,6 +3,7 @@ import { connectDB } from "@/lib/connectDB";
 import { Mission } from "@/models/mission";
 import { User } from "@/models/user";
 import { verifyJWT } from "@/utils/verifyJWT";
+import { Route } from "@/models/routes";
 
 
 export async function GET(req: NextRequest) {
@@ -43,10 +44,16 @@ export async function GET(req: NextRequest) {
 			truckNo: driver.driverProfile.truckNo,
 		}).sort({ targetArrival: 1 }).lean();
 
+		const route = await Route.findOne({
+			missionId: missions[0]?.missionId,
+			status: "ACTIVE",
+		}).lean();
+
 		return NextResponse.json({
 			success: true,
 			truckNo: driver.driverProfile.truckNo,
 			missions,
+			route,
 		});
 	} catch (error) {
 		console.error("Get driver missions error:", error);

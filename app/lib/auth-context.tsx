@@ -4,22 +4,27 @@ import { createContext, useContext, useEffect, useState, useCallback, type React
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
+export type AuthRole = "user" | "driver" | "admin";
+
 export interface AuthUser {
-  _id?: string;
-  name?: string;
-  email?: string;
-  phone?: string;
-  roles?: string[];
-  isActive?: boolean;
+  _id: string;
+  name: string;
+  email: string;
+  phone: string;
+  roles: AuthRole[];
+  isActive: boolean;
   driverProfile?: {
-    truckNo?: string;
-    licenseNumber?: string;
-    vehicleType?: string;
-    status?: string;
+    licenseNumber: string;
+    licenseExpiry: string;
+    truckNo: string;
+    currentMissionId?: string;
+    status: "available" | "on_mission" | "off_duty";
+    vehicleType?: "truck" | "van" | "other";
   };
   adminProfile?: {
-    department?: string;
-    designation?: string;
+    department: string;
+    designation: string;
+    jurisdictionDistrict?: string;
   };
 }
 
@@ -90,7 +95,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
   }, [setUser]);
 
-  const roles = Array.isArray(user?.roles) ? user!.roles : [];
+  const roles = user?.roles ?? [];
   const isLoggedIn = mounted && user !== null;
   const isAdmin = roles.includes("admin");
   const isDriver = roles.includes("driver");

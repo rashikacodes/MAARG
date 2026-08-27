@@ -82,7 +82,7 @@ export default function LoginPage() {
           </div>
 
           {/* Form card */}
-          <div className="rounded-[10px] border border-line bg-surface p-7">
+          <div className="rounded-card border border-line bg-surface p-7">
             <form onSubmit={handleLogin} className="space-y-4">
               {error && (
                 <div

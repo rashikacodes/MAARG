@@ -85,12 +85,21 @@ export async function POST(req: NextRequest) {
       {
         message: "Login successful",
         user: {
-          _id: user._id,
+          _id: String(user._id),
           name: user.name,
           email: user.email,
           phone: user.phone,
           roles: user.roles,
           isActive: user.isActive,
+          ...(user.driverProfile
+            ? {
+                driverProfile: {
+                  ...user.driverProfile,
+                  licenseExpiry: user.driverProfile.licenseExpiry.toISOString(),
+                },
+              }
+            : {}),
+          ...(user.adminProfile ? { adminProfile: user.adminProfile } : {}),
         },
       },
       { status: 200 }

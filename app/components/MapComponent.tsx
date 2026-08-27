@@ -198,7 +198,7 @@ export default function MapComponent({
   origin: originProp = "",
   destination: destinationProp = "",
   center = { lat: 26.144293, lng: 91.736155 },
-  zoom = 8,
+  zoom = 3,
   showControls = false,
   onRoutesLoaded,
   height = "calc(100vh - 220px)",

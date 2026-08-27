@@ -46,7 +46,7 @@ export default function MapPlaceholder({
   const tone = TONE_CLASSES[meta.tone];
 
   return (
-    <div className="relative overflow-hidden rounded-[10px] border border-line bg-surface">
+    <div className="relative overflow-hidden rounded-card border border-line bg-surface">
       {/* Map Header */}
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line bg-surface px-5 py-4">
         <div>
@@ -61,7 +61,7 @@ export default function MapPlaceholder({
       </div>
 
       {/* Map Visualization Area */}
-      <div className="relative min-h-[440px] w-full overflow-hidden bg-gradient-to-br from-wash via-canvas to-wash sm:min-h-[500px]">
+      <div className="relative min-h-110 w-full overflow-hidden bg-linear-to-br from-wash via-canvas to-wash sm:min-h-125">
         {/* Decorative Grid Lines */}
         <div
           className="pointer-events-none absolute inset-0 opacity-50"

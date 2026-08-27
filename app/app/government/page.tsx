@@ -6,12 +6,14 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Icon, { type IconName } from "@/components/Icon";
 import { useIsClient } from "@/components/useIsClient";
+import { useAuth, type AuthUser } from "@/lib/auth-context";
 import dynamic from "next/dynamic";
+
 
 const MapComponent = dynamic(() => import("@/components/MapComponent"), {
   ssr: false,
   loading: () => (
-    <div className="flex h-[480px] w-full items-center justify-center rounded-[10px] border border-line bg-canvas text-sm text-muted">
+    <div className="flex h-120 w-full items-center justify-center rounded-card border border-line bg-canvas text-sm text-muted">
       Loading fleet map…
     </div>
   ),
@@ -37,13 +39,6 @@ const CARGO_TYPES: { value: string; label: string }[] = [
   { value: "RELIEF", label: "Relief material" },
   { value: "GENERAL", label: "General cargo" },
 ];
-
-interface AuthUser {
-  _id?: string;
-  name?: string;
-  email?: string;
-  roles?: string[];
-}
 
 interface Mission {
   _id?: string;
@@ -74,17 +69,6 @@ interface FleetTruck {
   missionId?: string;
 }
 
-function readStoredAdmin(): AuthUser | null {
-  if (typeof window === "undefined") return null;
-  try {
-    const raw = window.localStorage.getItem("maarg-user");
-    if (!raw) return null;
-    const parsed = JSON.parse(raw) as AuthUser;
-    if (Array.isArray(parsed.roles) && parsed.roles.includes("admin")) return parsed;
-  } catch { /* ignore */ }
-  return null;
-}
-
 function formatDate(value?: string): string {
   if (!value) return "—";
   const d = new Date(value);
@@ -105,8 +89,9 @@ type Tab = "create" | "missions" | "fleet";
 
 export default function GovernmentPage() {
   const isClient = useIsClient();
-  const [user, setUser] = useState<AuthUser | null>(readStoredAdmin);
+  const { user, isAdmin, setUser, logout } = useAuth();
   const [activeTab, setActiveTab] = useState<Tab>("create");
+
 
   // Login state
   const [email, setEmail] = useState("");
@@ -133,8 +118,6 @@ export default function GovernmentPage() {
   // Fleet map state
   const [fleetTrucks, setFleetTrucks] = useState<FleetTruck[]>([]);
   const [fleetPolling, setFleetPolling] = useState(false);
-
-  const isAdmin = Array.isArray(user?.roles) && user!.roles!.includes("admin");
 
   // ── Fetch all missions ─────────────────────────────────────────────────────
   const fetchMissions = useCallback(async () => {
@@ -230,7 +213,6 @@ export default function GovernmentPage() {
         setLoginLoading(false);
         return;
       }
-      try { window.localStorage.setItem("maarg-user", JSON.stringify(loggedIn)); } catch { /* non-fatal */ }
       setUser(loggedIn ?? null);
       setLoginLoading(false);
     } catch {
@@ -239,9 +221,8 @@ export default function GovernmentPage() {
     }
   };
 
-  const handleLogout = () => {
-    try { window.localStorage.removeItem("maarg-user"); } catch { /* ignore */ }
-    setUser(null);
+  const handleLogout = async () => {
+    await logout();
     setCreatedMission(null);
     setEmail(""); setPassword("");
     setMissions([]); setFleetTrucks([]);
@@ -318,7 +299,7 @@ export default function GovernmentPage() {
               </div>
 
               {/* Tab strip */}
-              <div className="mb-6 flex gap-1 rounded-[10px] border border-line bg-surface p-1.5">
+              <div className="mb-6 flex gap-1 rounded-card border border-line bg-surface p-1.5">
                 {tabs.map((tab) => (
                   <button
                     key={tab.id}
@@ -417,10 +398,10 @@ export default function GovernmentPage() {
                     <p className="rounded-md border border-danger-line bg-danger-bg p-3 text-[13px] text-danger">{missionsError}</p>
                   )}
                   {!missionsLoading && missions.length === 0 && !missionsError && (
-                    <div className="rounded-[10px] border border-line bg-surface p-8 text-center text-sm text-muted">No missions found.</div>
+                    <div className="rounded-card border border-line bg-surface p-8 text-center text-sm text-muted">No missions found.</div>
                   )}
                   {missions.length > 0 && (
-                    <div className="overflow-hidden rounded-[10px] border border-line bg-surface">
+                    <div className="overflow-hidden rounded-card border border-line bg-surface">
                       <table className="w-full text-sm">
                         <thead className="border-b border-line bg-wash text-left text-[12px] font-semibold uppercase tracking-wider text-muted">
                           <tr>
@@ -478,7 +459,7 @@ export default function GovernmentPage() {
                       No active truck locations available yet. Trucks will appear once drivers start reporting their GPS position via <code>/api/truck/[truckNo]</code>.
                     </div>
                   )}
-                  <div className="overflow-hidden rounded-[10px] border border-line">
+                  <div className="overflow-hidden rounded-card border border-line">
                     <MapComponent
                       mode="fleet"
                       fleetTrucks={fleetTrucks}

@@ -14,6 +14,7 @@ export interface IRoute extends Document {
   truckNo: string;
 
   routeVersion: number;
+  alternativeRank: number;
 
   geometry: {
     type: "LineString";
@@ -24,6 +25,7 @@ export interface IRoute extends Document {
   durationSeconds: number;
 
   riskScore: number;
+  riskBand: "LOW" | "MODERATE" | "HIGH" | "CRITICAL";
 
   status: RouteStatus;
 
@@ -59,6 +61,14 @@ const routeSchema = new Schema<IRoute>(
       default: 1,
     },
 
+    alternativeRank: {
+      type: Number,
+      required: true,
+      default: 1,
+      min: 1,
+      max: 3,
+    },
+
     geometry: {
       type: {
         type: String,
@@ -87,6 +97,12 @@ const routeSchema = new Schema<IRoute>(
       min: 0,
       max: 100,
       default: 0,
+    },
+
+    riskBand: {
+      type: String,
+      enum: ["LOW", "MODERATE", "HIGH", "CRITICAL"],
+      default: "LOW",
     },
 
     status: {

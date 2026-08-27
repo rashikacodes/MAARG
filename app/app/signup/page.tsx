@@ -122,7 +122,7 @@ export default function SignupPage() {
           </div>
 
           {submitted ? (
-            <div className="rounded-[10px] border border-line bg-surface p-8 text-center">
+            <div className="rounded-card border border-line bg-surface p-8 text-center">
               <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full border border-safe-line bg-safe-bg text-safe">
                 <Icon name="checkCircle" size={30} />
               </span>
@@ -145,7 +145,7 @@ export default function SignupPage() {
           ) : (
             <>
               {/* Tabs */}
-              <div className="mb-6 grid grid-cols-2 gap-2 rounded-[10px] border border-line bg-surface p-1.5">
+              <div className="mb-6 grid grid-cols-2 gap-2 rounded-card border border-line bg-surface p-1.5">
                 <button
                   type="button"
                   onClick={() => switchTab("user")}
@@ -169,7 +169,7 @@ export default function SignupPage() {
               </div>
 
               {/* Form card */}
-              <div className="rounded-[10px] border border-line bg-surface p-7">
+              <div className="rounded-card border border-line bg-surface p-7">
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div className="border-b border-line pb-3">
                     <h3 className="text-base font-semibold text-navy">
@@ -246,7 +246,7 @@ export default function SignupPage() {
                   {/* Driver-only profile */}
                   {tab === "driver" && (
                     <div className="space-y-4 rounded-md border border-line bg-canvas p-4">
-                      <p className="flex items-center gap-1.5 text-[12px] font-semibold uppercase tracking-[0.1em] text-india-600">
+                      <p className="flex items-center gap-1.5 text-[12px] font-semibold uppercase tracking-widest text-india-600">
                         <Icon name="truck" size={14} />
                         Driver &amp; vehicle profile
                       </p>

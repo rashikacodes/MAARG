@@ -4,6 +4,7 @@ import { connectDB } from "@/lib/connectDB";
 import { Incident } from "@/models/incident";
 import generateID from "@/utils/generateID";
 import { verifyJWT } from "@/utils/verifyJWT";
+import { rerouteRoutesForIncident } from "@/lib/rerouteActiveRoutes";
 
 const reportIncidentSchema = z.object({
 	type: z.enum([
@@ -62,8 +63,19 @@ export async function POST(req: NextRequest) {
 			status: "ACTIVE",
 		});
 
+		let reroute: unknown = { affectedMissionCount: 0, missions: [] };
+		try {
+			reroute = await rerouteRoutesForIncident(incident.incidentId);
+		} catch (error) {
+			console.error("Reroute active routes error:", error);
+			reroute = {
+				success: false,
+				message: "Incident saved, but affected routes could not be recalculated",
+			};
+		}
+
 		return NextResponse.json(
-			{ success: true, message: "Incident reported successfully", incident },
+			{ success: true, message: "Incident reported successfully", incident, reroute },
 			{ status: 201 }
 		);
 	} catch (error) {

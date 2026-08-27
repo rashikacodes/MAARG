@@ -132,7 +132,7 @@ export default function Navbar() {
       <div className="hidden bg-navy-800 text-white/80 sm:block">
         <div className="mx-auto flex h-8 w-full max-w-[1600px] items-center justify-between px-4 text-[11.5px] sm:px-8 lg:px-12">
           <div className="flex items-center gap-2">
-            <span className="tricolor-rail h-3 w-[3px] rounded-full" aria-hidden="true" />
+            <span className="tricolor-rail h-3 w-0.75 rounded-full" aria-hidden="true" />
             <span>North Eastern Region · Smart Logistics &amp; Accessibility Mission</span>
           </div>
           <div className="flex items-center gap-4">
@@ -146,7 +146,7 @@ export default function Navbar() {
       <header className="sticky top-0 z-50 w-full">
         <div className="tricolor-strip" aria-hidden="true" />
         <div className="border-b border-line bg-surface/95 backdrop-blur">
-          <div className="mx-auto flex h-[66px] w-full max-w-[1600px] items-center justify-between px-4 sm:px-8 lg:px-12">
+          <div className="mx-auto flex h-16.5 w-full max-w-[1600px] items-center justify-between px-4 sm:px-8 lg:px-12">
             {/* Brand */}
             <Link href="/" className="flex shrink-0 items-center gap-2.5">
               <BrandMark size={38} />
@@ -188,7 +188,7 @@ export default function Navbar() {
                     <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-white uppercase">
                       {displayName[0]}
                     </span>
-                    <span className="max-w-[120px] truncate">{displayName}</span>
+                    <span className="max-w-30 truncate">{displayName}</span>
                     {isAdmin && (
                       <span className="rounded-full bg-india/10 px-1.5 py-0.5 text-[10px] font-semibold text-india">
                         Admin

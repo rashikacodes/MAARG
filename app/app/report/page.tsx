@@ -268,7 +268,7 @@ export default function ReportPage() {
           </div>
 
           {/* Form card */}
-          <div className="rounded-[10px] border border-line bg-surface p-7">
+          <div className="rounded-card border border-line bg-surface p-7">
             {submitted ? (
               <div className="text-center">
                 <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full border border-safe-line bg-safe-bg text-safe">
