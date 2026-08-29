@@ -158,6 +158,8 @@ export default function DriverMissionPage() {
     missions.find((m) => m.status === "IN_PROGRESS") ?? missions[0] ?? null;
   const others = primary ? missions.filter((m) => m !== primary) : [];
 
+  const [showAllRoutes, setShowAllRoutes] = useState(false);
+
   return (
     <div className="flex min-h-screen w-full flex-col bg-canvas text-ink">
       <Navbar />
@@ -346,7 +348,17 @@ export default function DriverMissionPage() {
                     height="560px"
                     mode="routes"
                     showControls={false}
+                    showOnlyBestRoute={!showAllRoutes}
                   />
+                </div>
+                <div className="mt-3 flex items-center justify-end">
+                  <button
+                    onClick={() => setShowAllRoutes(!showAllRoutes)}
+                    className="inline-flex items-center gap-2 rounded-md border border-line bg-surface px-4 py-2 text-sm font-medium text-navy transition-colors hover:border-primary hover:text-primary"
+                  >
+                    <Icon name={showAllRoutes ? "chevronUp" : "chevronDown"} size={15} />
+                    {showAllRoutes ? "Show best route only" : "Show all routes"}
+                  </button>
                 </div>
                 <p className="mt-2 text-[12px] text-muted">
                   Map powered by Mappls · Click a route in the legend to see risk analysis

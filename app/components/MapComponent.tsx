@@ -307,6 +307,8 @@ interface MapComponentProps {
   }>;
   /** User type for markers */
   userType?: "driver" | "user";
+  /** Only show the recommended/best route instead of all routes */
+  showOnlyBestRoute?: boolean;
 }
 
 export default function MapComponent({
@@ -320,6 +322,7 @@ export default function MapComponent({
   mode = "routes",
   fleetTrucks = [],
   userType = "user",
+  showOnlyBestRoute = false,
 }: MapComponentProps) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MapplsMap | null>(null);
@@ -334,6 +337,7 @@ export default function MapComponent({
     index: number;
   } | null>(null);
   const [mapError, setMapError] = useState<string | null>(null);
+  const [incidents, setIncidents] = useState<any[]>([]);
 
   // ── Coordinate resolution: "Guwahati" → { lat, lng } ──────────────────────
   const resolveCoord = useCallback(
@@ -378,9 +382,11 @@ export default function MapComponent({
         const fetchedRoutes: RouteData[] = Array.isArray(data.routes)
           ? data.routes
           : [];
+        const fetchedIncidents = data.incidents || [];
         setRoutes(fetchedRoutes);
+        setIncidents(fetchedIncidents);
         onRoutesLoaded?.(fetchedRoutes);
-        drawRoutes(fetchedRoutes, data.incidents || []);
+        drawRoutes(fetchedRoutes, fetchedIncidents);
       } catch {
         setMapError("Route service unavailable. Showing sample data.");
       } finally {
@@ -408,6 +414,16 @@ export default function MapComponent({
       });
       overlaysRef.current = [];
     }
+
+    // Filter routes if showOnlyBestRoute is true - only show the single best route
+    // Best = isRecommended flag from server, fallback = lowest riskScore
+    const getBestRoute = (list: RouteData[]) => {
+      if (list.length === 0) return null;
+      return list.find((r) => r.isRecommended) ?? [...list].sort((a, b) => a.riskScore - b.riskScore)[0];
+    };
+    const routesToShow = showOnlyBestRoute
+      ? (() => { const b = getBestRoute(routeList); return b ? [b] : routeList.slice(0, 1); })()
+      : routeList;
 
     const allPoints: { lat: number; lng: number }[] = [];
 
@@ -440,7 +456,7 @@ export default function MapComponent({
     });
 
     // 2. Sort routes so blocked/high risk are drawn on the bottom, and recommended safe route is drawn on top
-    const sortedRoutesToDraw = [...routeList].sort((a, b) => b.riskScore - a.riskScore);
+    const sortedRoutesToDraw = [...routesToShow].sort((a, b) => b.riskScore - a.riskScore);
 
     sortedRoutesToDraw.forEach((route) => {
       const path = route.coordinates.map(([lng, lat]) => ({ lat, lng }));
@@ -457,6 +473,15 @@ export default function MapComponent({
         strokeOpacity: isRec ? 0.95 : 0.75,
       });
       overlaysRef.current.push(polyline);
+      // Make route line clickable to show risk popup
+      try {
+        const anyPoly = polyline as any;
+        const idx = routesToShow.findIndex((r) => r.id === route.id);
+        const handler = () => setSelectedRoute({ route, index: idx >= 0 ? idx : 0 });
+        if (typeof anyPoly.on === "function") anyPoly.on("click", handler);
+        else if (typeof anyPoly.addListener === "function") anyPoly.addListener("click", handler);
+        else if (typeof anyPoly.addEventListener === "function") anyPoly.addEventListener("click", handler);
+      } catch {}
     });
 
     // 3. Draw origin and destination markers on top
@@ -560,6 +585,15 @@ export default function MapComponent({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fleetTrucks, mode, sdkReady]);
+
+  // ── Re-draw routes when showOnlyBestRoute changes ──────────────────────────
+  useEffect(() => {
+    if (mode !== "routes") return;
+    if (routes.length > 0 && sdkReady && mapRef.current) {
+      drawRoutes(routes, incidents);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showOnlyBestRoute]);
 
   // ── Re-fetch routes when origin/destination props change ─────────────────
   useEffect(() => {
@@ -735,42 +769,46 @@ export default function MapComponent({
             >
               Tap a route line on map
             </p>
-            {routes.map((r, i) => (
-              <button
-                key={r.id}
-                onClick={() => setSelectedRoute({ route: r, index: i })}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 8,
-                  width: "100%",
-                  padding: "5px 8px",
-                  border: "none",
-                  borderRadius: 6,
-                  background:
-                    selectedRoute?.route.id === r.id
-                      ? "#f0f9ff"
-                      : "transparent",
-                  cursor: "pointer",
-                  textAlign: "left",
-                  marginBottom: 2,
-                }}
-              >
-                <span
+            {(() => {
+              const best = routes.find((r) => r.isRecommended) ?? [...routes].sort((a,b)=>a.riskScore-b.riskScore)[0];
+              const displayed = showOnlyBestRoute ? (best ? [best] : routes.slice(0,1)) : routes;
+              return displayed;
+            })().map((r, i) => (
+                <button
+                  key={r.id}
+                  onClick={() => setSelectedRoute({ route: r, index: i })}
                   style={{
-                    width: 20,
-                    height: 4,
-                    borderRadius: 2,
-                    background: r.color,
-                    flexShrink: 0,
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    width: "100%",
+                    padding: "5px 8px",
+                    border: "none",
+                    borderRadius: 6,
+                    background:
+                      selectedRoute?.route.id === r.id
+                        ? "#f0f9ff"
+                        : "transparent",
+                    cursor: "pointer",
+                    textAlign: "left",
+                    marginBottom: 2,
                   }}
-                />
-                <span style={{ fontSize: 12, color: "#111827" }}>
-                  Route {i + 1} — {r.riskScore}% risk{" "}
-                  {r.isRecommended ? "⭐" : ""}
-                </span>
-              </button>
-            ))}
+                >
+                  <span
+                    style={{
+                      width: 20,
+                      height: 4,
+                      borderRadius: 2,
+                      background: r.color,
+                      flexShrink: 0,
+                    }}
+                  />
+                  <span style={{ fontSize: 12, color: "#111827" }}>
+                    Route {i + 1} — {r.riskScore}% risk{" "}
+                    {r.isRecommended ? "⭐" : ""}
+                  </span>
+                </button>
+              ))}
           </div>
         )}
 
