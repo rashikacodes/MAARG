@@ -79,10 +79,6 @@ MAARG/
 └── .gitignore
 ```
 
-> **Note:** `dataImpoerting.py` retains its original filename from the repo. Consider renaming it to `data_importing.py` for consistency.
-
----
-
 ## Tech Stack
 
 | Layer | Technology |
